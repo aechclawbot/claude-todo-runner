@@ -17,7 +17,7 @@ def send_message(text: str) -> bool:
     resp = requests.post(API_URL, json={
         "chat_id": CHAT_ID,
         "text": text,
-        "parse_mode": "Markdown",
+        "parse_mode": "HTML",
     })
     if not resp.ok:
         print(f"Telegram API error: {resp.status_code} {resp.text}", file=sys.stderr)
@@ -39,13 +39,13 @@ def main():
 
     # Send summary header
     send_message(
-        f"\U0001f916 *Claude Todo Runner*\n\n"
-        f"Found *{len(plans)}* task(s) ready for execution.\n"
+        f"\U0001f916 <b>Claude Todo Runner</b>\n\n"
+        f"Found <b>{len(plans)}</b> task(s) ready for execution.\n"
         f"Review each plan below and reply:\n"
-        f"\u2022 `approve <number>` to execute\n"
-        f"\u2022 `reject <number>` to skip\n"
-        f"\u2022 `approve all` to execute everything\n"
-        f"\u2022 `details <number>` for more info"
+        f"\u2022 <code>approve &lt;number&gt;</code> to execute\n"
+        f"\u2022 <code>reject &lt;number&gt;</code> to skip\n"
+        f"\u2022 <code>approve all</code> to execute everything\n"
+        f"\u2022 <code>details &lt;number&gt;</code> for more info"
     )
 
     # Send each plan
@@ -55,12 +55,12 @@ def main():
         )
 
         msg = (
-            f"*Task #{i}:* {plan.get('title', 'Untitled')}\n\n"
-            f"*What:* {plan.get('description', 'No description')[:500]}\n\n"
-            f"*Files:* {', '.join(plan.get('files_affected', ['unknown']))}\n"
-            f"*Risk:* {risk_emoji} {plan.get('risk_level', 'unknown')}\n"
-            f"*Duration:* {plan.get('estimated_duration', 'unknown')}\n\n"
-            f"Reply `approve {i}` or `reject {i}`"
+            f"<b>Task #{i}:</b> {plan.get('title', 'Untitled')}\n\n"
+            f"<b>What:</b> {plan.get('description', 'No description')[:500]}\n\n"
+            f"<b>Files:</b> {', '.join(plan.get('files_affected', ['unknown']))}\n"
+            f"<b>Risk:</b> {risk_emoji} {plan.get('risk_level', 'unknown')}\n"
+            f"<b>Duration:</b> {plan.get('estimated_duration', 'unknown')}\n\n"
+            f"Reply <code>approve {i}</code> or <code>reject {i}</code>"
         )
         send_message(msg)
 

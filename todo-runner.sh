@@ -39,7 +39,7 @@ jq '[ .[] | if .status == "pending" then .status = "planning" else . end ]' "$TO
 
 # Generate execution plans using Claude Code
 # Claude Code reads the todos and outputs a structured plan
-claude --print --output-format json \
+claude --dangerously-skip-permissions --print --output-format json \
   "You are a task planning assistant. Read the file $TODO_FILE and find all items with status 'planning'.
 
 For EACH such item, produce a detailed execution plan. Your output must be ONLY a valid JSON array written to $PLANS_FILE with this structure:

@@ -105,6 +105,8 @@ if [[ "$(uname)" == "Darwin" ]]; then
         <string>${CLAUDE_CODE_TELEGRAM_BOT_TOKEN}</string>
         <key>MASTER_TELEGRAM_USER_ID</key>
         <string>${MASTER_TELEGRAM_USER_ID}</string>
+        <key>PATH</key>
+        <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
     </dict>
     <key>RunAtLoad</key>
     <true/>

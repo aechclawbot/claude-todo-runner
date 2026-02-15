@@ -41,7 +41,7 @@ def send(text: str):
         requests.post(f"{API_URL}/sendMessage", json={
             "chat_id": CHAT_ID,
             "text": text,
-            "parse_mode": "Markdown",
+            "parse_mode": "HTML",
         }, timeout=10)
     except Exception as e:
         log(f"Failed to send Telegram message: {e}")
@@ -85,7 +85,7 @@ def archive_plan(plan: dict, result: str):
 def execute_plan(plan: dict) -> str:
     """Execute a single plan using Claude Code with full permissions."""
     log(f"Executing plan: {plan.get('title')}")
-    send(f"\u26a1 *Executing:* {plan.get('title')}...\nThis may take a few minutes.")
+    send(f"\u26a1 <b>Executing:</b> {plan.get('title')}...\nThis may take a few minutes.")
 
     todo_id = plan.get("todo_id", "")
     update_todo_status(todo_id, "executing")
@@ -115,25 +115,25 @@ def execute_plan(plan: dict) -> str:
         if result.returncode == 0:
             update_todo_status(todo_id, "completed")
             archive_plan(plan, output)
-            send(f"\u2705 *Completed:* {plan.get('title')}\n\n{output[-500:]}")
+            send(f"\u2705 <b>Completed:</b> {plan.get('title')}\n\n{output[-500:]}")
             log(f"Plan completed: {plan.get('title')}")
             return output
         else:
             error = result.stderr[-500:] if result.stderr else "(no error output)"
             update_todo_status(todo_id, "failed")
             archive_plan(plan, f"FAILED: {error}")
-            send(f"\u274c *Failed:* {plan.get('title')}\n\nError: {error}")
+            send(f"\u274c <b>Failed:</b> {plan.get('title')}\n\nError: {error}")
             log(f"Plan failed: {plan.get('title')}: {error}")
             return f"FAILED: {error}"
 
     except subprocess.TimeoutExpired:
         update_todo_status(todo_id, "failed")
-        send(f"\u23f0 *Timed out:* {plan.get('title')} (exceeded 10 minutes)")
+        send(f"\u23f0 <b>Timed out:</b> {plan.get('title')} (exceeded 10 minutes)")
         log(f"Plan timed out: {plan.get('title')}")
         return "TIMEOUT"
     except Exception as e:
         update_todo_status(todo_id, "failed")
-        send(f"\U0001f4a5 *Error:* {plan.get('title')}\n\n{str(e)[:300]}")
+        send(f"\U0001f4a5 <b>Error:</b> {plan.get('title')}\n\n{str(e)[:300]}")
         log(f"Plan error: {plan.get('title')}: {e}")
         return f"ERROR: {e}"
 
@@ -147,7 +147,7 @@ def handle_message(text: str):
         if not plans:
             send("No pending plans. All clear! \u2728")
         else:
-            msg = f"\U0001f4cb *{len(plans)} pending plan(s):*\n\n"
+            msg = f"\U0001f4cb <b>{len(plans)} pending plan(s):</b>\n\n"
             for i, p in enumerate(plans, 1):
                 msg += f"{i}. {p.get('title', 'Untitled')}\n"
             send(msg)
@@ -167,7 +167,7 @@ def handle_message(text: str):
         try:
             idx = int(text.split()[1]) - 1
         except (ValueError, IndexError):
-            send("Usage: `approve <number>` (e.g., `approve 1`)")
+            send("Usage: <code>approve &lt;number&gt;</code> (e.g., <code>approve 1</code>)")
             return
 
         if not plans or idx < 0 or idx >= len(plans):
@@ -186,7 +186,7 @@ def handle_message(text: str):
         try:
             idx = int(text.split()[1]) - 1
         except (ValueError, IndexError):
-            send("Usage: `reject <number>` (e.g., `reject 1`)")
+            send("Usage: <code>reject &lt;number&gt;</code> (e.g., <code>reject 1</code>)")
             return
 
         if not plans or idx < 0 or idx >= len(plans):
@@ -203,7 +203,7 @@ def handle_message(text: str):
         try:
             idx = int(text.split()[1]) - 1
         except (ValueError, IndexError):
-            send("Usage: `details <number>`")
+            send("Usage: <code>details &lt;number&gt;</code>")
             return
 
         if not plans or idx < 0 or idx >= len(plans):
@@ -212,34 +212,34 @@ def handle_message(text: str):
 
         plan = plans[idx]
         msg = (
-            f"\U0001f4dd *Full Details \u2014 Task #{idx+1}*\n\n"
-            f"*Title:* {plan.get('title')}\n\n"
-            f"*Description:*\n{plan.get('description')}\n\n"
-            f"*Files:*\n" + "\n".join(f"  \u2022 {f}" for f in plan.get("files_affected", [])) + "\n\n"
-            f"*Commands:*\n" + "\n".join(f"  `{c}`" for c in plan.get("commands_to_run", [])) + "\n\n"
-            f"*Rollback:* {plan.get('rollback_plan', 'N/A')}"
+            f"\U0001f4dd <b>Full Details \u2014 Task #{idx+1}</b>\n\n"
+            f"<b>Title:</b> {plan.get('title')}\n\n"
+            f"<b>Description:</b>\n{plan.get('description')}\n\n"
+            f"<b>Files:</b>\n" + "\n".join(f"  \u2022 {f}" for f in plan.get("files_affected", [])) + "\n\n"
+            f"<b>Commands:</b>\n" + "\n".join(f"  <code>{c}</code>" for c in plan.get("commands_to_run", [])) + "\n\n"
+            f"<b>Rollback:</b> {plan.get('rollback_plan', 'N/A')}"
         )
         send(msg)
 
     elif text == "help":
         send(
-            "\U0001f916 *Commands:*\n\n"
-            "`approve <n>` \u2014 Execute plan #n\n"
-            "`approve all` \u2014 Execute all pending plans\n"
-            "`reject <n>` \u2014 Skip plan #n\n"
-            "`details <n>` \u2014 Show full plan details\n"
-            "`status` \u2014 List pending plans\n"
-            "`help` \u2014 Show this message"
+            "\U0001f916 <b>Commands:</b>\n\n"
+            "<code>approve &lt;n&gt;</code> \u2014 Execute plan #n\n"
+            "<code>approve all</code> \u2014 Execute all pending plans\n"
+            "<code>reject &lt;n&gt;</code> \u2014 Skip plan #n\n"
+            "<code>details &lt;n&gt;</code> \u2014 Show full plan details\n"
+            "<code>status</code> \u2014 List pending plans\n"
+            "<code>help</code> \u2014 Show this message"
         )
 
     else:
-        send("Unknown command. Send `help` for available commands.")
+        send("Unknown command. Send <code>help</code> for available commands.")
 
 
 def main():
     """Main polling loop."""
     log("Approval listener started")
-    send("\U0001f7e2 *Claude Todo Runner* is online.\nSend `help` for commands.")
+    send("\U0001f7e2 <b>Claude Todo Runner</b> is online.\nSend <code>help</code> for commands.")
 
     offset = 0
     consecutive_errors = 0
