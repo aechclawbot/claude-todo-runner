@@ -23,7 +23,7 @@ fi
 
 # Step 3: Install Python dependencies
 echo "[3/8] Installing Python dependencies..."
-pip3 install requests --quiet 2>/dev/null || pip3 install requests
+pip3 install --user requests --quiet 2>/dev/null || pip3 install --user --break-system-packages requests
 
 # Step 4: Copy scripts
 echo "[4/8] Installing scripts to $OPENCLAW_DIR..."
@@ -96,7 +96,7 @@ if [[ "$(uname)" == "Darwin" ]]; then
     <string>com.openclaw.claude-todo-listener</string>
     <key>ProgramArguments</key>
     <array>
-        <string>/usr/bin/python3</string>
+        <string>$(which python3)</string>
         <string>${OPENCLAW_DIR}/approval-listener.py</string>
     </array>
     <key>EnvironmentVariables</key>
